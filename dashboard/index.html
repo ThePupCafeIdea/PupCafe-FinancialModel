@@ -71,7 +71,7 @@
   <footer>Live data from <code>data/assumptions.yaml</code>. Refresh to update! 🐶☕</footer>
 
 <script>
-fetch('dashboard/metrics.json')
+fetch('metrics.json')
   .then(r=>r.json())
   .then(d=>{
     const icons = {
