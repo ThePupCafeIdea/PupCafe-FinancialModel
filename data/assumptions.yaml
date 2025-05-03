@@ -1,36 +1,41 @@
-launch_costs:
-  rent_deposit: 6250
-  equipment_furniture: 10500
-  initial_payroll: 22000
-  opening_stock: 4200
-  permits_insurance: 2200
-  marketing: 1000
-  emergency_buffer: 7800
-revenue_drivers:
-  avg_ticket: 7.00
-  customers_weekday: 60
-  customers_weekend: 80
-  days_open_per_week: 7
-cogs_pct:
-  coffee: 0.28
-  food: 0.35
-  retail: 0.45
-labor_model:
-  barista_wage: 16
-  barista_fte: 2
-  manager_wage: 0
-  manager_fte: 0
-  payroll_tax_pct: 0.10
-fixed_expenses:
-  rent_monthly: 2500
-  utilities: 450
-  software_pos: 150
-  waste_janitorial: 120
-  insurance_monthly: 180
-  misc_fixed: 100
-financing:
-  equity: 30000
-  loan_principal: 24000
-  loan_rate: 0.08
-  loan_term_years: 5
-ramp_curve: [0.40, 0.55, 0.70, 0.85, 1.00, 1.00]
+tiers:
+  baseline:
+    rent_deposit:            6250
+    equipment_furniture:    10500
+    initial_payroll:        22000
+    opening_stock:           4200
+    permits_insurance:       2200
+    marketing:               1000
+    emergency_buffer:        7800
+  lean:
+    rent_deposit:            6250
+    equipment_furniture:    13500
+    initial_payroll:        30500
+    opening_stock:           6000
+    permits_insurance:       2200
+    marketing:               2000
+    emergency_buffer:       11000
+  operational:
+    rent_deposit:            6250
+    equipment_furniture:    17000
+    initial_payroll:        37500
+    opening_stock:           6000
+    permits_insurance:       2600
+    marketing:               3000
+    emergency_buffer:       18000
+  momentum:
+    rent_deposit:            7500
+    equipment_furniture:    22000
+    initial_payroll:        46000
+    opening_stock:           7000
+    permits_insurance:       2600
+    marketing:               4000
+    emergency_buffer:       22000
+  flagship:
+    rent_deposit:            9000
+    equipment_furniture:    31000
+    initial_payroll:        55000
+    opening_stock:           8500
+    permits_insurance:       3200
+    marketing:               6000
+    emergency_buffer:       34000
