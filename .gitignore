@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.xlsx
+!model/PupCafe_FinModel_template.xlsx
+docs/*.pdf
+.env
