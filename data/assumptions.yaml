@@ -1,1 +1,44 @@
+# assumptions.yaml
+
+tiers:
+  baseline:
+    rent_deposit:         6250
+    equipment_furniture: 10500
+    initial_payroll:     22000
+    opening_stock:        4200
+    permits_insurance:    2200
+    marketing:            1000
+    emergency_buffer:     7800
+  lean:
+    rent_deposit:         6250
+    equipment_furniture: 13500
+    initial_payroll:     30500
+    opening_stock:        6000
+    permits_insurance:    2200
+    marketing:            2000
+    emergency_buffer:    11000
+  operational:
+    rent_deposit:         6250
+    equipment_furniture: 17000
+    initial_payroll:     37500
+    opening_stock:        6000
+    permits_insurance:    2600
+    marketing:            3000
+    emergency_buffer:    18000
+  momentum:
+    rent_deposit:         7500
+    equipment_furniture: 22000
+    initial_payroll:     46000
+    opening_stock:        7000
+    permits_insurance:    2600
+    marketing:            4000
+    emergency_buffer:    22000
+  flagship:
+    rent_deposit:         9000
+    equipment_furniture: 31000
+    initial_payroll:     55000
+    opening_stock:        8500
+    permits_insurance:    3200
+    marketing:            6000
+    emergency_buffer:    34000
 
