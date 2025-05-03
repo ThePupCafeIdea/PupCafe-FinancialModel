@@ -1,0 +1,40 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>🐾 Pup Café Financials</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body{font-family:Segoe UI,sans-serif;background:#eaf8de;color:#3d5a40;text-align:center;padding:2rem}
+  .card{background:#fff;padding:2rem;border-radius:12px;max-width:600px;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+  select{padding:.6rem;border:2px solid #9ec17d;border-radius:8px;margin-bottom:1.5rem;}
+  canvas{max-width:400px;margin:0 auto;}
+  table{width:100%;border-collapse:collapse;margin-top:1rem}
+  th,td{padding:.6rem;border-bottom:1px solid #ddd}
+  th{background:#9ec17d;color:#fff;text-transform:uppercase;}
+</style></head><body>
+  <h1>🐾 Pup Café Launch‐Cost Viewer</h1>
+  <div class="card">
+    <select id="tierSelect"></select>
+    <canvas id="chart"></canvas>
+    <table id="costTable"><thead><tr><th>Category</th><th>Amount</th></tr></thead><tbody></tbody></table>
+  </div>
+  <footer>Live from <code>data/assumptions.yaml</code></footer>
+<script>
+  let chart;
+  fetch('metrics.json').then(r=>r.json()).then(d=>{
+    const sel=document.getElementById('tierSelect');
+    Object.keys(d.totals).forEach(t=>sel.add(new Option(t,t)));
+    sel.value=d.default; sel.onchange=_=>draw(sel.value);
+    draw(d.default);
+    function draw(t){
+      const data=d.tiers[t];
+      if(chart)chart.destroy();
+      chart=new Chart(document.getElementById('chart'),{
+        type:'doughnut',data:{labels:Object.keys(data),datasets:[{data:Object.values(data)}]},
+        options:{plugins:{legend:{position:'bottom'}},animation:{animateScale:true}}
+      });
+      const tb=document.querySelector('#costTable tbody');
+      tb.innerHTML='';
+      Object.entries(data).forEach(([k,v])=>
+        tb.insertAdjacentHTML('beforeend',`<tr><td>${k}</td><td>$${v.toLocaleString()}</td></tr>`));
+    }
+  });
+</script></body></html>
