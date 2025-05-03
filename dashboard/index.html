@@ -1,6 +1,86 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pup Café Metrics</title></head>
-<body><h1>Pup Café Key Assumptions</h1><pre id="out"></pre>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pup Café – Launch‑Cost Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap">
+  <style>
+    :root {
+      --green:#3d5a40;
+      --light:#eaf8de;
+      --card:#ffffff;
+    }
+    body{
+      margin:0;
+      font-family:'Segoe UI',sans-serif;
+      background:var(--light);
+      color:var(--green);
+      text-align:center;
+      padding:2rem 1rem;
+    }
+    h1{font-size:2.2rem;margin:0 0 1rem}
+    #canvas-wrap{max-width:500px;margin:0 auto}
+    table{margin:2rem auto;border-collapse:collapse}
+    th,td{padding:0.6rem 1rem;border-bottom:1px solid #ccc}
+    th{background:var(--green);color:#fff}
+    tr:nth-child(even) td{background:#f7fcf3}
+    .card{
+      background:var(--card);
+      box-shadow:0 4px 12px rgb(0 0 0 / .05);
+      border-radius:12px;
+      padding:2rem;
+      max-width:680px;
+      margin:0 auto;
+    }
+    footer{margin-top:2rem;font-size:.9rem}
+  </style>
+</head>
+<body>
+
+  <h1>🟢 Pup Café Launch‑Cost Snapshot</h1>
+
+  <div class="card">
+    <div id="canvas-wrap">
+      <canvas id="costChart"></canvas>
+    </div>
+
+    <table id="costTable">
+      <thead><tr><th>Category</th><th>$ Amount</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <footer>Numbers render automatically from <code>data/assumptions.yaml</code> on every push.</footer>
+
 <script>
-fetch('metrics.json').then(r=>r.json())
-  .then(d=>{document.getElementById('out').textContent = JSON.stringify(d,null,2);});
-</script></body></html>
+fetch('metrics.json')
+  .then(r=>r.json())
+  .then(d=>{
+    const costs=d.launch_costs;
+    // -------  Chart  -------
+    new Chart(document.getElementById('costChart'),{
+      type:'doughnut',
+      data:{
+        labels:Object.keys(costs),
+        datasets:[{data:Object.values(costs)}]
+      },
+      options:{
+        plugins:{legend:{position:'bottom'}},
+        responsive:true
+      }
+    });
+    // -------  Table  -------
+    const tbody=document.querySelector('#costTable tbody');
+    Object.entries(costs).forEach(([k,v])=>{
+      const row=document.createElement('tr');
+      row.innerHTML=`<td>${k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</td>
+                     <td>$${v.toLocaleString()}</td>`;
+      tbody.appendChild(row);
+    });
+  })
+  .catch(err=>{console.error(err);document.body.innerHTML='<p>Error loading metrics.json</p>';});
+</script>
+</body>
+</html>
