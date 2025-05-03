@@ -1,40 +1,153 @@
-<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>🐾 Pup Café Financials</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-  body{font-family:Segoe UI,sans-serif;background:#eaf8de;color:#3d5a40;text-align:center;padding:2rem}
-  .card{background:#fff;padding:2rem;border-radius:12px;max-width:600px;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
-  select{padding:.6rem;border:2px solid #9ec17d;border-radius:8px;margin-bottom:1.5rem;}
-  canvas{max-width:400px;margin:0 auto;}
-  table{width:100%;border-collapse:collapse;margin-top:1rem}
-  th,td{padding:.6rem;border-bottom:1px solid #ddd}
-  th{background:#9ec17d;color:#fff;text-transform:uppercase;}
-</style></head><body>
-  <h1>🐾 Pup Café Launch‐Cost Viewer</h1>
-  <div class="card">
-    <select id="tierSelect"></select>
-    <canvas id="chart"></canvas>
-    <table id="costTable"><thead><tr><th>Category</th><th>Amount</th></tr></thead><tbody></tbody></table>
-  </div>
-  <footer>Live from <code>data/assumptions.yaml</code></footer>
-<script>
-  let chart;
-  fetch('metrics.json').then(r=>r.json()).then(d=>{
-    const sel=document.getElementById('tierSelect');
-    Object.keys(d.totals).forEach(t=>sel.add(new Option(t,t)));
-    sel.value=d.default; sel.onchange=_=>draw(sel.value);
-    draw(d.default);
-    function draw(t){
-      const data=d.tiers[t];
-      if(chart)chart.destroy();
-      chart=new Chart(document.getElementById('chart'),{
-        type:'doughnut',data:{labels:Object.keys(data),datasets:[{data:Object.values(data)}]},
-        options:{plugins:{legend:{position:'bottom'}},animation:{animateScale:true}}
-      });
-      const tb=document.querySelector('#costTable tbody');
-      tb.innerHTML='';
-      Object.entries(data).forEach(([k,v])=>
-        tb.insertAdjacentHTML('beforeend',`<tr><td>${k}</td><td>$${v.toLocaleString()}</td></tr>`));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🐾 Pup Café Interactive Financials</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap">
+  <style>
+    :root {
+      --green: #9EC17D;
+      --dark: #3d5a40;
+      --light: #eaf8de;
+      --card: #fff;
     }
-  });
-</script></body></html>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+    h1 { font-size: 2.4rem; margin-bottom: .5rem; }
+    h2 { font-size: 1.8rem; margin: 1.5rem 0 .5rem; }
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 720px;
+      margin: 1rem auto;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    canvas { max-width: 100%; height: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: .6rem 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: var(--green);
+      color: #fff;
+      text-transform: uppercase;
+    }
+    tbody tr:hover td {
+      background: #f3f9f2;
+    }
+    .emoji { font-size: 1.2rem; margin-right: .4rem; }
+    footer { margin-top: 2rem; font-size: .9rem; }
+    .instruction { font-style: italic; color: #666; margin-top: .5rem; }
+  </style>
+</head>
+<body>
+  <h1>🐾 Pup Café Financial Evaluator</h1>
+  <p class="instruction">Click a bar to see its detailed breakdown below!</p>
+
+  <div class="card">
+    <h2>Tier Cost Comparison</h2>
+    <canvas id="totalChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2 id="breakdownTitle">Breakdown: Baseline</h2>
+    <canvas id="breakdownChart"></canvas>
+    <table id="costTable">
+      <thead><tr><th>Category</th><th>Amount</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <footer>Data live from <code>data/assumptions.yaml</code>. Refresh to update! 🐶</footer>
+
+<script>
+fetch('dashboard/metrics.json')
+  .then(r => r.json())
+  .then(d => {
+    // Emoji icons for categories
+    const icons = {
+      rent_deposit: '🏠',
+      equipment_furniture: '🛠️',
+      initial_payroll: '💰',
+      opening_stock: '☕',
+      permits_insurance: '📜',
+      marketing: '📣',
+      emergency_buffer: '🛡️'
+    };
+
+    // 1) Draw total cost bar chart
+    const tiers = Object.keys(d.totals);
+    const totals = tiers.map(t => d.totals[t]);
+    const totalCtx = document.getElementById('totalChart');
+    const totalChart = new Chart(totalCtx, {
+      type: 'bar',
+      data: {
+        labels: tiers.map(t => t.charAt(0).toUpperCase()+t.slice(1)),
+        datasets: [{ data: totals, backgroundColor: '#9EC17D' }]
+      },
+      options: {
+        plugins: { legend: { display: false }},
+        onClick: (evt, items) => {
+          if (items.length) {
+            const idx = items[0].index;
+            const tier = tiers[idx];
+            drawBreakdown(tier);
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => '$'+v } }
+        }
+      }
+    });
+
+    // 2) Breakdown chart & table
+    let breakdownChart;
+    function drawBreakdown(tier) {
+      const data = d.tiers[tier];
+      document.getElementById('breakdownTitle').textContent =
+        `Breakdown: ${tier.charAt(0).toUpperCase()+tier.slice(1)}`;
+      const labels = Object.keys(data).map(k => `${icons[k]||''} ${k.replace(/_/g,' ')}`);
+      const values = Object.values(data);
+      const ctx = document.getElementById('breakdownChart');
+      if (breakdownChart) breakdownChart.destroy();
+      breakdownChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: ['#9EC17D','#8AC78E','#C3E2C3','#EAF8DE','#D4EED4','#B7DAB7','#AAE5AA'] }] },
+        options: { plugins: { legend: { position: 'bottom' } }, animation: { animateScale: true } }
+      });
+
+      // Fill table
+      const tbody = document.querySelector('#costTable tbody');
+      tbody.innerHTML = '';
+      Object.entries(data).forEach(([k, v]) => {
+        const name = k.replace(/_/g,' ');
+        const icon = icons[k]||'';
+        tbody.insertAdjacentHTML('beforeend',
+          `<tr><td><span class="emoji">${icon}</span>${name.charAt(0).toUpperCase()+name.slice(1)}</td>
+               <td>$${v.toLocaleString()}</td></tr>`);
+      });
+    }
+
+    // Initialize to default tier
+    drawBreakdown(d.default);
+  })
+  .catch(console.error);
+</script>
+</body>
+</html>
